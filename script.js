@@ -16,10 +16,12 @@ const SQ = 30; // Square size
 const VACANT = "transparent"; // Empty color
 
 function drawSquare(x, y, color, context = ctx) {
-    context.fillStyle = color;
-    context.fillRect(x * SQ, y * SQ, SQ, SQ);
-    
-    if (color !== VACANT) {
+    if (color === VACANT) {
+        context.clearRect(x * SQ, y * SQ, SQ, SQ);
+    } else {
+        context.fillStyle = color;
+        context.fillRect(x * SQ, y * SQ, SQ, SQ);
+        
         context.strokeStyle = "rgba(255, 255, 255, 0.3)";
         context.lineWidth = 2;
         context.strokeRect(x * SQ, y * SQ, SQ, SQ);
