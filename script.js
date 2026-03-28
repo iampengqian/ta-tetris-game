@@ -222,7 +222,9 @@ function updateScore(cleared) {
 
 function randomPiece() {
     let r = Math.floor(Math.random() * PIECES.length);
-    return new Piece(PIECES[r][0], PIECES[r][1]);
+    // Deep clone the tetromino pattern to prevent template pollution
+    const tetrominoCopy = JSON.parse(JSON.stringify(PIECES[r][0]));
+    return new Piece(tetrominoCopy, PIECES[r][1]);
 }
 
 function drawNextPiece() {
@@ -230,13 +232,9 @@ function drawNextPiece() {
     const piece = nextPiece.activeTetromino;
     const color = nextPiece.color;
     
-    const offsetX = (nextCanvas.width / SQ - piece.length) / 2;
-    const offsetY = (nextCanvas.height / SQ - piece.length) / 2;
-    
-    for (r = 0; r < piece.length; r++) {
-        for (c = 0; c < piece.length; c++) {
+    for (let r = 0; r < piece.length; r++) {
+        for (let c = 0; c < piece.length; c++) {
             if (piece[r][c]) {
-                // Smaller square for preview
                 const previewSQ = 20;
                 const pOffsetX = (nextCanvas.width - piece.length * previewSQ) / 2;
                 const pOffsetY = (nextCanvas.height - piece.length * previewSQ) / 2;
@@ -276,6 +274,7 @@ document.addEventListener("keydown", event => {
 });
 
 function togglePause() {
+    if (gameOver) return;
     isPaused = !isPaused;
     if (isPaused) {
         overlayText.innerText = "已暂停";
@@ -284,14 +283,43 @@ function togglePause() {
     } else {
         overlay.classList.add('hidden');
         pauseBtn.innerText = "暂停";
+        dropStart = Date.now();
         requestAnimationFrame(drop);
     }
 }
 
+function restartGame() {
+    // Reset state
+    initBoard();
+    score = 0;
+    level = 1;
+    lines = 0;
+    gameOver = false;
+    isPaused = false;
+    
+    // Update UI
+    scoreElement.innerText = "0";
+    levelElement.innerText = "1";
+    linesElement.innerText = "0";
+    overlay.classList.add('hidden');
+    pauseBtn.innerText = "暂停";
+    
+    // Reset pieces
+    currentPiece = randomPiece();
+    nextPiece = randomPiece();
+    drawNextPiece();
+    
+    // Clear canvas and draw initial state
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBoard();
+    
+    // Restart loop
+    dropStart = Date.now();
+    requestAnimationFrame(drop);
+}
+
 pauseBtn.addEventListener('click', togglePause);
-restartBtn.addEventListener('click', () => {
-    location.reload();
-});
+restartBtn.addEventListener('click', restartGame);
 
 // Game Loop
 function drop() {
