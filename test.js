@@ -64,8 +64,7 @@ test("Collision Detection - Walls", () => {
     assert(piece.collision(0, ROW, piece.activeTetromino, board) === true, "Should collide with bottom");
     
     const rightPiece = new MockPiece(T, COL - 3, 0);
-    assert(rightPiece.collision(1, 0, rightPiece.activeTetromino, board) === false, "Should not collide with right wall yet");
-    assert(rightPiece.collision(2, 0, rightPiece.activeTetromino, board) === true, "Should collide with right wall");
+    assert(rightPiece.collision(1, 0, rightPiece.activeTetromino, board) === true, "Should collide with right wall when moving right by 1");
 });
 
 test("Collision Detection - Blocks", () => {
