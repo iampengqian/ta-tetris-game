@@ -141,12 +141,14 @@ button:active {
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: opacity 0.3s;
+    transition: opacity 0.3s, visibility 0.3s;
     z-index: 10;
+    visibility: visible;
+    opacity: 1;
 }
 
 #overlay.hidden {
-    display: none;
+    visibility: hidden;
     opacity: 0;
 }
 
