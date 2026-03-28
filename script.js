@@ -87,6 +87,7 @@ Piece.prototype.moveDown = function() {
         this.lock();
         if (gameOver) return;
         currentPiece = nextPiece;
+        currentPiece.draw();
         nextPiece = randomPiece();
         drawNextPiece();
     }
@@ -300,12 +301,14 @@ function restartGame() {
     
     // Reset pieces
     currentPiece = randomPiece();
+    currentPiece.draw();
     nextPiece = randomPiece();
     drawNextPiece();
     
     // Clear canvas and draw initial state
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBoard();
+    currentPiece.draw();
     
     // Restart loop
     dropStart = Date.now();
@@ -495,6 +498,7 @@ const PIECES = [
 initBoard();
 drawBoard();
 currentPiece = randomPiece();
+currentPiece.draw();
 nextPiece = randomPiece();
 drawNextPiece();
 animationId = requestAnimationFrame(drop);
