@@ -15,17 +15,6 @@ const COL = 10;
 const SQ = 30; // Square size
 const VACANT = "transparent"; // Empty color
 
-// Pieces and colors
-const PIECES = [
-    [Z, "#ff416c"],
-    [S, "#00ff87"],
-    [T, "#d400ff"],
-    [O, "#ffeb3b"],
-    [L, "#ff9800"],
-    [I, "#00d2ff"],
-    [J, "#3d5afe"]
-];
-
 function drawSquare(x, y, color, context = ctx) {
     context.fillStyle = color;
     context.fillRect(x * SQ, y * SQ, SQ, SQ);
@@ -341,14 +330,6 @@ function drop() {
     animationId = requestAnimationFrame(drop);
 }
 
-// Start Game
-initBoard();
-drawBoard();
-currentPiece = randomPiece();
-nextPiece = randomPiece();
-drawNextPiece();
-animationId = requestAnimationFrame(drop);
-
 // Tetromino Patterns
 const I = [
 	[
@@ -498,3 +479,22 @@ const Z = [
 		[1, 0, 0],
 	]
 ];
+
+// Pieces and colors
+const PIECES = [
+    [Z, "#ff416c"],
+    [S, "#00ff87"],
+    [T, "#d400ff"],
+    [O, "#ffeb3b"],
+    [L, "#ff9800"],
+    [I, "#00d2ff"],
+    [J, "#3d5afe"]
+];
+
+// Start Game
+initBoard();
+drawBoard();
+currentPiece = randomPiece();
+nextPiece = randomPiece();
+drawNextPiece();
+animationId = requestAnimationFrame(drop);
