@@ -165,6 +165,7 @@ Piece.prototype.lock = function() {
                 gameOver = true;
                 overlayText.innerText = "游戏结束";
                 overlay.classList.remove('hidden');
+                cancelAnimationFrame(animationId);
                 return;
             }
             board[this.y + r][this.x + c] = this.color;
@@ -181,7 +182,8 @@ Piece.prototype.lock = function() {
             }
         }
         if (isFull) {
-            for (y = r; y > 1; y--) {
+            // Fix: Changed y > 1 to y > 0 to include the first row
+            for (y = r; y > 0; y--) {
                 for (c = 0; c < COL; c++) {
                     board[y][c] = board[y - 1][c];
                 }
@@ -208,6 +210,7 @@ let isPaused = false;
 let currentPiece;
 let nextPiece;
 let dropStart = Date.now();
+let animationId;
 
 function updateScore(cleared) {
     const points = [0, 100, 300, 500, 800];
@@ -280,16 +283,18 @@ function togglePause() {
         overlayText.innerText = "已暂停";
         overlay.classList.remove('hidden');
         pauseBtn.innerText = "继续";
+        cancelAnimationFrame(animationId);
     } else {
         overlay.classList.add('hidden');
         pauseBtn.innerText = "暂停";
         dropStart = Date.now();
-        requestAnimationFrame(drop);
+        animationId = requestAnimationFrame(drop);
     }
 }
 
 function restartGame() {
     // Reset state
+    cancelAnimationFrame(animationId);
     initBoard();
     score = 0;
     level = 1;
@@ -315,7 +320,7 @@ function restartGame() {
     
     // Restart loop
     dropStart = Date.now();
-    requestAnimationFrame(drop);
+    animationId = requestAnimationFrame(drop);
 }
 
 pauseBtn.addEventListener('click', togglePause);
@@ -333,7 +338,7 @@ function drop() {
         currentPiece.moveDown();
         dropStart = Date.now();
     }
-    requestAnimationFrame(drop);
+    animationId = requestAnimationFrame(drop);
 }
 
 // Start Game
@@ -342,7 +347,7 @@ drawBoard();
 currentPiece = randomPiece();
 nextPiece = randomPiece();
 drawNextPiece();
-drop();
+animationId = requestAnimationFrame(drop);
 
 // Tetromino Patterns
 const I = [
