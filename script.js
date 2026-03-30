@@ -88,10 +88,7 @@ Piece.prototype.moveDown = function() {
     } else {
         this.lock();
         if (gameOver) return;
-        currentPiece = nextPiece;
-        currentPiece.draw();
-        nextPiece = randomPiece();
-        drawNextPiece();
+        spawnNextPiece();
     }
 };
 
@@ -130,6 +127,17 @@ Piece.prototype.rotate = function() {
         this.activeTetromino = this.tetromino[this.tetrominoN];
         this.draw();
     }
+};
+
+Piece.prototype.hardDrop = function() {
+    this.unDraw();
+    while (!this.collision(0, 1, this.activeTetromino)) {
+        this.y++;
+    }
+    this.draw();
+    this.lock();
+    if (gameOver) return;
+    spawnNextPiece();
 };
 
 Piece.prototype.collision = function(x, y, piece) {
@@ -221,6 +229,13 @@ function randomPiece() {
     return new Piece(tetrominoCopy, PIECES[rIndex][1]);
 }
 
+function spawnNextPiece() {
+    currentPiece = nextPiece;
+    currentPiece.draw();
+    nextPiece = randomPiece();
+    drawNextPiece();
+}
+
 function drawNextPiece() {
     nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
     const piece = nextPiece.activeTetromino;
@@ -264,6 +279,10 @@ document.addEventListener("keydown", event => {
         dropStart = Date.now();
     } else if (event.key === 'ArrowDown') {
         currentPiece.moveDown();
+    } else if (event.code === 'Space') {
+        event.preventDefault();
+        currentPiece.hardDrop();
+        dropStart = Date.now();
     }
 });
 
