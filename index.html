@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tetris Game</title>
+    <style>
+      :root {
+        font-family: "Segoe UI", sans-serif;
+        color: #f4f1ea;
+        background: #121212;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+      }
+
+      .page-header {
+        display: flex;
+        justify-content: center;
+        padding: 24px 16px 8px;
+      }
+
+      .scoreboard {
+        min-width: 220px;
+        padding: 14px 20px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.08);
+        text-align: center;
+        backdrop-filter: blur(8px);
+      }
+
+      .scoreboard-label {
+        margin: 0;
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.8;
+      }
+
+      .scoreboard-value {
+        margin: 8px 0 0;
+        font-size: 40px;
+        font-weight: 700;
+        line-height: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="page-header">
+      <section class="scoreboard" aria-label="当前得分">
+        <p class="scoreboard-label">当前得分</p>
+        <p class="scoreboard-value" id="score">0</p>
+      </section>
+    </header>
+
+    <script>
+      let score = 0;
+      const scoreElement = document.getElementById("score");
+
+      setInterval(() => {
+        score += 1;
+        scoreElement.textContent = String(score);
+      }, 1000);
+    </script>
+  </body>
+</html>
