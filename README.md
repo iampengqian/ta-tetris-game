@@ -28,3 +28,5 @@ ta merge feat-xxx
 ## License
 
 This project is licensed under the MIT License.
+
+## E2E R2 Test - passed
