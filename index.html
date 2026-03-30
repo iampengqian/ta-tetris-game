@@ -92,17 +92,16 @@
       }
 
       function addScore(points) {
+        if (!Number.isFinite(points) || points <= 0) {
+          return;
+        }
+
         score += points;
         renderScore();
       }
 
       window.addEventListener("tetris:score", (event) => {
         const points = Number(event.detail?.points ?? 0);
-
-        if (!Number.isFinite(points) || points <= 0) {
-          return;
-        }
-
         addScore(points);
       });
 
