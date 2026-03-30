@@ -77,6 +77,20 @@ test("Collision Detection - Blocks", () => {
     assert(piece.collision(0, 0, piece.activeTetromino, board) === false, "Should not collide if not moving into block");
 });
 
+test("Hard Drop Stops At First Valid Landing Row", () => {
+    initBoard();
+    board[18][4] = "blue";
+    const O = [[[1, 1], [1, 1]]];
+    const piece = new MockPiece(O, 4, 0);
+
+    while (!piece.collision(0, 1, piece.activeTetromino, board)) {
+        piece.y++;
+    }
+
+    assert(piece.y === 16, "Hard drop should stop on the row directly above the blocking cell");
+    assert(piece.collision(0, 1, piece.activeTetromino, board) === true, "Piece should collide if moved one row further");
+});
+
 test("Line Clearing Logic Simulation", () => {
     initBoard();
     // Fill the bottom row

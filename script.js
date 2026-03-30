@@ -86,13 +86,17 @@ Piece.prototype.moveDown = function() {
         this.y++;
         this.draw();
     } else {
-        this.lock();
-        if (gameOver) return;
-        currentPiece = nextPiece;
-        currentPiece.draw();
-        nextPiece = randomPiece();
-        drawNextPiece();
+        this.handleLanding();
     }
+};
+
+Piece.prototype.handleLanding = function() {
+    this.lock();
+    if (gameOver) return;
+    currentPiece = nextPiece;
+    currentPiece.draw();
+    nextPiece = randomPiece();
+    drawNextPiece();
 };
 
 Piece.prototype.moveRight = function() {
@@ -130,6 +134,17 @@ Piece.prototype.rotate = function() {
         this.activeTetromino = this.tetromino[this.tetrominoN];
         this.draw();
     }
+};
+
+Piece.prototype.hardDrop = function() {
+    if (gameOver || isPaused) return;
+
+    this.unDraw();
+    while (!this.collision(0, 1, this.activeTetromino)) {
+        this.y++;
+    }
+    this.draw();
+    this.handleLanding();
 };
 
 Piece.prototype.collision = function(x, y, piece) {
@@ -264,6 +279,10 @@ document.addEventListener("keydown", event => {
         dropStart = Date.now();
     } else if (event.key === 'ArrowDown') {
         currentPiece.moveDown();
+    } else if (event.key === ' ' || event.code === 'Space') {
+        event.preventDefault();
+        currentPiece.hardDrop();
+        dropStart = Date.now();
     }
 });
 
