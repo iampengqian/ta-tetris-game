@@ -24,3 +24,7 @@ ta merge feat-xxx
 ## License
 
 MIT
+
+## Contributors
+
+感谢所有贡献者！
