@@ -21,10 +21,10 @@ ta logs feat-xxx
 ta merge feat-xxx
 ```
 
-## License
-
-MIT
-
 ## Contributors
 
 感谢所有贡献者！
+
+## License
+
+This project is licensed under the MIT License.
