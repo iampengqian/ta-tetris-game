@@ -51,6 +51,23 @@
         font-weight: 700;
         line-height: 1;
       }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        padding: 8px 16px 24px;
+      }
+
+      .controls button {
+        padding: 10px 16px;
+        border: 0;
+        border-radius: 999px;
+        background: #f59e0b;
+        color: #111827;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
@@ -61,14 +78,54 @@
       </section>
     </header>
 
+    <main class="controls">
+      <button type="button" id="line-clear-button">模拟消行 +100</button>
+    </main>
+
     <script>
       let score = 0;
       const scoreElement = document.getElementById("score");
+      const lineClearButton = document.getElementById("line-clear-button");
 
-      setInterval(() => {
-        score += 1;
+      function renderScore() {
         scoreElement.textContent = String(score);
-      }, 1000);
+      }
+
+      function addScore(points) {
+        score += points;
+        renderScore();
+      }
+
+      window.addEventListener("tetris:score", (event) => {
+        const points = Number(event.detail?.points ?? 0);
+
+        if (!Number.isFinite(points) || points <= 0) {
+          return;
+        }
+
+        addScore(points);
+      });
+
+      lineClearButton.addEventListener("click", () => {
+        window.dispatchEvent(
+          new CustomEvent("tetris:score", {
+            detail: { points: 100, reason: "line-clear" },
+          }),
+        );
+      });
+
+      window.tetrisGame = {
+        addScore,
+        lineCleared(lines = 1) {
+          window.dispatchEvent(
+            new CustomEvent("tetris:score", {
+              detail: { points: lines * 100, reason: "line-clear" },
+            }),
+          );
+        },
+      };
+
+      renderScore();
     </script>
   </body>
 </html>
