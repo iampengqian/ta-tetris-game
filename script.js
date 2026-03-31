@@ -17,8 +17,10 @@ scoreBanner.innerHTML = `
     <span class="canvas-score-label">分数</span>
     <span id="canvas-score-value" class="canvas-score-value">0</span>
 `;
-canvasWrapper.insertBefore(scoreBanner, canvas);
-const canvasScoreElement = document.getElementById('canvas-score-value');
+if (canvasWrapper) {
+    canvasWrapper.insertBefore(scoreBanner, canvas);
+}
+const canvasScoreElement = scoreBanner.querySelector('#canvas-score-value');
 
 const ROW = 20;
 const COL = 10;
@@ -229,7 +231,8 @@ function renderStats() {
 }
 
 function updateScore(cleared) {
-    score += cleared * 10;
+    const points = [0, 100, 300, 500, 800];
+    score += points[cleared] * level;
     lines += cleared;
     level = Math.floor(lines / 10) + 1;
     renderStats();
