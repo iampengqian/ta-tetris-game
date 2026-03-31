@@ -5,6 +5,7 @@
     --accent-color: #00d2ff;
     --border-color: rgba(255, 255, 255, 0.2);
     --grid-line: rgba(255, 255, 255, 0.05);
+    --score-banner-height: 64px;
 }
 
 body {
@@ -121,6 +122,36 @@ button:active {
     border-radius: 10px;
     background: rgba(0, 0, 0, 0.5);
     overflow: hidden;
+    padding-top: var(--score-banner-height);
+}
+
+.canvas-score {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--score-banner-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.25rem;
+    background: linear-gradient(90deg, rgba(0, 210, 255, 0.2), rgba(0, 0, 0, 0.15));
+    border-bottom: 1px solid var(--border-color);
+    box-sizing: border-box;
+}
+
+.canvas-score-label {
+    font-size: 0.85rem;
+    letter-spacing: 0.2rem;
+    opacity: 0.8;
+}
+
+.canvas-score-value {
+    font-size: 2rem;
+    font-weight: bold;
+    font-family: 'Courier New', Courier, monospace;
+    color: var(--accent-color);
+    text-shadow: 0 0 12px rgba(0, 210, 255, 0.45);
 }
 
 #game-canvas {
@@ -133,10 +164,10 @@ button:active {
 
 #overlay {
     position: absolute;
-    top: 0;
+    top: var(--score-banner-height);
     left: 0;
     width: 100%;
-    height: 100%;
+    height: calc(100% - var(--score-banner-height));
     background: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;

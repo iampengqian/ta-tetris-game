@@ -9,6 +9,16 @@ const pauseBtn = document.getElementById('pause-btn');
 const restartBtn = document.getElementById('restart-btn');
 const overlay = document.getElementById('overlay');
 const overlayText = document.getElementById('overlay-text');
+const canvasWrapper = document.querySelector('.canvas-wrapper');
+
+const scoreBanner = document.createElement('div');
+scoreBanner.className = 'canvas-score';
+scoreBanner.innerHTML = `
+    <span class="canvas-score-label">分数</span>
+    <span id="canvas-score-value" class="canvas-score-value">0</span>
+`;
+canvasWrapper.insertBefore(scoreBanner, canvas);
+const canvasScoreElement = document.getElementById('canvas-score-value');
 
 const ROW = 20;
 const COL = 10;
@@ -211,15 +221,18 @@ let nextPiece;
 let dropStart = Date.now();
 let animationId;
 
-function updateScore(cleared) {
-    const points = [0, 100, 300, 500, 800];
-    score += points[cleared] * level;
-    lines += cleared;
-    level = Math.floor(lines / 10) + 1;
-    
+function renderStats() {
     scoreElement.innerText = score;
+    canvasScoreElement.innerText = score;
     levelElement.innerText = level;
     linesElement.innerText = lines;
+}
+
+function updateScore(cleared) {
+    score += cleared * 10;
+    lines += cleared;
+    level = Math.floor(lines / 10) + 1;
+    renderStats();
 }
 
 function randomPiece() {
@@ -313,9 +326,7 @@ function restartGame() {
     isPaused = false;
     
     // Update UI
-    scoreElement.innerText = "0";
-    levelElement.innerText = "1";
-    linesElement.innerText = "0";
+    renderStats();
     overlay.classList.add('hidden');
     pauseBtn.innerText = "暂停";
     
@@ -521,4 +532,5 @@ currentPiece = randomPiece();
 currentPiece.draw();
 nextPiece = randomPiece();
 drawNextPiece();
+renderStats();
 animationId = requestAnimationFrame(drop);
