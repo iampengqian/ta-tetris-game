@@ -9,6 +9,23 @@ const pauseBtn = document.getElementById('pause-btn');
 const restartBtn = document.getElementById('restart-btn');
 const overlay = document.getElementById('overlay');
 const overlayText = document.getElementById('overlay-text');
+const canvasWrapper = document.querySelector('.canvas-wrapper');
+
+const scoreBanner = document.createElement('div');
+scoreBanner.className = 'canvas-score';
+scoreBanner.innerHTML = `
+    <span class="canvas-score-label">分数</span>
+    <span id="canvas-score-value" class="canvas-score-value">0</span>
+`;
+if (canvasWrapper) {
+    const playfieldShell = document.createElement('div');
+    playfieldShell.className = 'playfield-shell';
+    canvasWrapper.insertBefore(scoreBanner, canvas);
+    canvasWrapper.appendChild(playfieldShell);
+    playfieldShell.appendChild(canvas);
+    playfieldShell.appendChild(overlay);
+}
+const canvasScoreElement = scoreBanner.querySelector('#canvas-score-value');
 
 const ROW = 20;
 const COL = 10;
@@ -211,15 +228,19 @@ let nextPiece;
 let dropStart = Date.now();
 let animationId;
 
+function renderStats() {
+    scoreElement.innerText = score;
+    canvasScoreElement.innerText = score;
+    levelElement.innerText = level;
+    linesElement.innerText = lines;
+}
+
 function updateScore(cleared) {
     const points = [0, 100, 300, 500, 800];
     score += points[cleared] * level;
     lines += cleared;
     level = Math.floor(lines / 10) + 1;
-    
-    scoreElement.innerText = score;
-    levelElement.innerText = level;
-    linesElement.innerText = lines;
+    renderStats();
 }
 
 function randomPiece() {
@@ -313,9 +334,7 @@ function restartGame() {
     isPaused = false;
     
     // Update UI
-    scoreElement.innerText = "0";
-    levelElement.innerText = "1";
-    linesElement.innerText = "0";
+    renderStats();
     overlay.classList.add('hidden');
     pauseBtn.innerText = "暂停";
     
@@ -521,4 +540,5 @@ currentPiece = randomPiece();
 currentPiece.draw();
 nextPiece = randomPiece();
 drawNextPiece();
+renderStats();
 animationId = requestAnimationFrame(drop);
