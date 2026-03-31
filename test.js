@@ -47,6 +47,12 @@ MockPiece.prototype.collision = function(x, y, piece, board) {
     return false;
 };
 
+MockPiece.prototype.hardDrop = function(board) {
+    while (!this.collision(0, 1, this.activeTetromino, board)) {
+        this.y++;
+    }
+};
+
 // Test Cases
 test("Board Initialization", () => {
     initBoard();
@@ -112,6 +118,29 @@ test("Line Clearing Logic Simulation", () => {
     assert(linesCleared === 1, "Should have cleared one line");
     assert(board[ROW - 1][0] === "red", "Block above should have moved down to the bottom row");
     assert(board[ROW - 1][1] === VACANT, "Other blocks in the bottom row should be vacant");
+});
+
+test("Hard Drop Stops At The Lowest Valid Position", () => {
+    initBoard();
+    const O = [[[1, 1], [1, 1]]];
+    const piece = new MockPiece(O, 4, 0);
+
+    piece.hardDrop(board);
+
+    assert(piece.y === ROW - piece.activeTetromino.length, "Hard drop should stop on the floor");
+});
+
+test("Hard Drop Stops Above Existing Blocks", () => {
+    initBoard();
+    board[10][4] = "blue";
+    board[10][5] = "blue";
+
+    const O = [[[1, 1], [1, 1]]];
+    const piece = new MockPiece(O, 4, 0);
+
+    piece.hardDrop(board);
+
+    assert(piece.y === 8, "Hard drop should stop immediately above stacked blocks");
 });
 
 // Run Tests

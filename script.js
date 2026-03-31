@@ -279,6 +279,10 @@ function drawNextPiece() {
 }
 
 // Input handling
+function isHardDropKey(event) {
+    return event.code === 'Space' || event.key === ' ' || event.key === 'Spacebar';
+}
+
 document.addEventListener("keydown", event => {
     if (gameOver) return;
     
@@ -300,8 +304,9 @@ document.addEventListener("keydown", event => {
         dropStart = Date.now();
     } else if (event.key === 'ArrowDown') {
         currentPiece.moveDown();
-    } else if (event.code === 'Space') {
+    } else if (isHardDropKey(event)) {
         event.preventDefault();
+        if (event.repeat) return;
         currentPiece.hardDrop();
         dropStart = Date.now();
     }
