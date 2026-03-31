@@ -25,6 +25,44 @@ function initBoard() {
     }
 }
 
+const LINE_CLEAR_POINTS = [0, 10, 25, 40, 60];
+
+function calculateLineClearScore(cleared) {
+    return LINE_CLEAR_POINTS[cleared] || 0;
+}
+
+function clearCompletedLines(boardState) {
+    let cleared = 0;
+
+    for (let r = ROW - 1; r >= 0; r--) {
+        let isFull = true;
+        for (let c = 0; c < COL; c++) {
+            if (boardState[r][c] === VACANT) {
+                isFull = false;
+                break;
+            }
+        }
+
+        if (!isFull) {
+            continue;
+        }
+
+        for (let y = r; y > 0; y--) {
+            for (let c = 0; c < COL; c++) {
+                boardState[y][c] = boardState[y - 1][c];
+            }
+        }
+        for (let c = 0; c < COL; c++) {
+            boardState[0][c] = VACANT;
+        }
+
+        cleared++;
+        r++;
+    }
+
+    return cleared;
+}
+
 // Minimal Piece implementation for tests
 function MockPiece(tetromino, x, y) {
     this.tetromino = tetromino;
@@ -87,31 +125,32 @@ test("Line Clearing Logic Simulation", () => {
     board[ROW - 2][0] = "red";
     
     // Simulate lock/clear logic
-    let linesCleared = 0;
-    for (let r = 0; r < ROW; r++) {
-        let isFull = true;
-        for (let c = 0; c < COL; c++) {
-            if (board[r][c] === VACANT) {
-                isFull = false;
-                break;
-            }
-        }
-        if (isFull) {
-            for (let y = r; y > 0; y--) {
-                for (let c = 0; c < COL; c++) {
-                    board[y][c] = board[y - 1][c];
-                }
-            }
-            for (let c = 0; c < COL; c++) {
-                board[0][c] = VACANT;
-            }
-            linesCleared++;
-        }
-    }
+    const linesCleared = clearCompletedLines(board);
     
     assert(linesCleared === 1, "Should have cleared one line");
     assert(board[ROW - 1][0] === "red", "Block above should have moved down to the bottom row");
     assert(board[ROW - 1][1] === VACANT, "Other blocks in the bottom row should be vacant");
+});
+
+test("Line Clearing Logic Simulation - Double Line", () => {
+    initBoard();
+    for (let c = 0; c < COL; c++) {
+        board[ROW - 1][c] = "blue";
+        board[ROW - 2][c] = "green";
+    }
+    board[ROW - 3][2] = "red";
+
+    const linesCleared = clearCompletedLines(board);
+
+    assert(linesCleared === 2, "Should have cleared two lines");
+    assert(board[ROW - 1][2] === "red", "Block above double clear should fall to bottom");
+});
+
+test("Scoring Rules", () => {
+    assert(calculateLineClearScore(1) === 10, "Single line should score 10");
+    assert(calculateLineClearScore(2) === 25, "Double line should score 25");
+    assert(calculateLineClearScore(3) === 40, "Triple line should score 40");
+    assert(calculateLineClearScore(4) === 60, "Tetris should score 60");
 });
 
 // Run Tests
