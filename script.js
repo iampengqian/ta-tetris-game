@@ -18,7 +18,12 @@ scoreBanner.innerHTML = `
     <span id="canvas-score-value" class="canvas-score-value">0</span>
 `;
 if (canvasWrapper) {
+    const playfieldShell = document.createElement('div');
+    playfieldShell.className = 'playfield-shell';
     canvasWrapper.insertBefore(scoreBanner, canvas);
+    canvasWrapper.appendChild(playfieldShell);
+    playfieldShell.appendChild(canvas);
+    playfieldShell.appendChild(overlay);
 }
 const canvasScoreElement = scoreBanner.querySelector('#canvas-score-value');
 
