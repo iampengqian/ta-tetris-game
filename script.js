@@ -9,6 +9,7 @@ const pauseBtn = document.getElementById('pause-btn');
 const restartBtn = document.getElementById('restart-btn');
 const overlay = document.getElementById('overlay');
 const overlayText = document.getElementById('overlay-text');
+const overlayScore = document.getElementById('overlay-score');
 const canvasWrapper = document.querySelector('.canvas-wrapper');
 
 const scoreBanner = document.createElement('div');
@@ -31,6 +32,7 @@ const ROW = 20;
 const COL = 10;
 const SQ = 30; // Square size
 const VACANT = "transparent"; // Empty color
+const LINE_CLEAR_POINTS = [0, 10, 25, 40, 60];
 
 function drawSquare(x, y, color, context = ctx) {
     if (color === VACANT) {
@@ -180,36 +182,14 @@ Piece.prototype.lock = function() {
             
             if (this.y + r < 0) {
                 gameOver = true;
-                overlayText.innerText = "游戏结束";
-                overlay.classList.remove('hidden');
-                cancelAnimationFrame(animationId);
+                showGameOver();
                 return;
             }
             board[this.y + r][this.x + c] = this.color;
         }
     }
-    
-    let linesClearedThisTurn = 0;
-    for (let r = 0; r < ROW; r++) {
-        let isFull = true;
-        for (let c = 0; c < COL; c++) {
-            if (board[r][c] === VACANT) {
-                isFull = false;
-                break;
-            }
-        }
-        if (isFull) {
-            for (let y = r; y > 0; y--) {
-                for (let c = 0; c < COL; c++) {
-                    board[y][c] = board[y - 1][c];
-                }
-            }
-            for (let c = 0; c < COL; c++) {
-                board[0][c] = VACANT;
-            }
-            linesClearedThisTurn++;
-        }
-    }
+
+    const linesClearedThisTurn = clearCompletedLines();
     
     if (linesClearedThisTurn > 0) {
         updateScore(linesClearedThisTurn);
@@ -228,6 +208,50 @@ let nextPiece;
 let dropStart = Date.now();
 let animationId;
 
+function calculateLineClearScore(cleared) {
+    return LINE_CLEAR_POINTS[cleared] || 0;
+}
+
+function triggerScoreFeedback() {
+    [scoreElement, canvasScoreElement].forEach(element => {
+        element.classList.remove('score-pop');
+        void element.offsetWidth;
+        element.classList.add('score-pop');
+    });
+}
+
+function clearCompletedLines() {
+    let cleared = 0;
+
+    for (let r = ROW - 1; r >= 0; r--) {
+        let isFull = true;
+        for (let c = 0; c < COL; c++) {
+            if (board[r][c] === VACANT) {
+                isFull = false;
+                break;
+            }
+        }
+
+        if (!isFull) {
+            continue;
+        }
+
+        for (let y = r; y > 0; y--) {
+            for (let c = 0; c < COL; c++) {
+                board[y][c] = board[y - 1][c];
+            }
+        }
+        for (let c = 0; c < COL; c++) {
+            board[0][c] = VACANT;
+        }
+
+        cleared++;
+        r++;
+    }
+
+    return cleared;
+}
+
 function renderStats() {
     scoreElement.innerText = score;
     canvasScoreElement.innerText = score;
@@ -236,11 +260,19 @@ function renderStats() {
 }
 
 function updateScore(cleared) {
-    const points = [0, 100, 300, 500, 800];
-    score += points[cleared] * level;
+    score += calculateLineClearScore(cleared);
     lines += cleared;
     level = Math.floor(lines / 10) + 1;
     renderStats();
+    triggerScoreFeedback();
+}
+
+function showGameOver() {
+    overlayText.innerText = "游戏结束";
+    overlayScore.innerText = `最终得分：${score}`;
+    overlayScore.classList.remove('hidden');
+    overlay.classList.remove('hidden');
+    cancelAnimationFrame(animationId);
 }
 
 function randomPiece() {
@@ -312,6 +344,7 @@ function togglePause() {
     isPaused = !isPaused;
     if (isPaused) {
         overlayText.innerText = "已暂停";
+        overlayScore.classList.add('hidden');
         overlay.classList.remove('hidden');
         pauseBtn.innerText = "继续";
         cancelAnimationFrame(animationId);
@@ -336,6 +369,7 @@ function restartGame() {
     // Update UI
     renderStats();
     overlay.classList.add('hidden');
+    overlayScore.classList.add('hidden');
     pauseBtn.innerText = "暂停";
     
     // Reset pieces
