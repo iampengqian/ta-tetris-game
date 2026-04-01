@@ -34,6 +34,15 @@ const SQ = 30; // Square size
 const VACANT = "transparent"; // Empty color
 const LINE_CLEAR_POINTS = [0, 10, 25, 40, 60];
 
+function hexToRgba(hex, alpha) {
+    const normalizedHex = hex.replace("#", "");
+    const bigint = parseInt(normalizedHex, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function drawSquare(x, y, color, context = ctx) {
     if (color === VACANT) {
         context.clearRect(x * SQ, y * SQ, SQ, SQ);
@@ -49,6 +58,18 @@ function drawSquare(x, y, color, context = ctx) {
         context.fillStyle = "rgba(255, 255, 255, 0.1)";
         context.fillRect(x * SQ, y * SQ, SQ, SQ / 4);
     }
+}
+
+function drawGhostSquare(x, y, color, context = ctx) {
+    context.fillStyle = hexToRgba(color, 0.22);
+    context.fillRect(x * SQ, y * SQ, SQ, SQ);
+
+    context.save();
+    context.setLineDash([6, 4]);
+    context.strokeStyle = hexToRgba(color, 0.7);
+    context.lineWidth = 2;
+    context.strokeRect(x * SQ + 1, y * SQ + 1, SQ - 2, SQ - 2);
+    context.restore();
 }
 
 // Create board
@@ -67,6 +88,15 @@ function drawBoard() {
         for (let c = 0; c < COL; c++) {
             drawSquare(c, r, board[r][c]);
         }
+    }
+}
+
+function renderPlayfield() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBoard();
+    if (currentPiece) {
+        currentPiece.drawGhost();
+        currentPiece.draw();
     }
 }
 
@@ -101,9 +131,8 @@ Piece.prototype.unDraw = function() {
 
 Piece.prototype.moveDown = function() {
     if (!this.collision(0, 1, this.activeTetromino)) {
-        this.unDraw();
         this.y++;
-        this.draw();
+        renderPlayfield();
     } else {
         this.lock();
         if (gameOver) return;
@@ -113,17 +142,15 @@ Piece.prototype.moveDown = function() {
 
 Piece.prototype.moveRight = function() {
     if (!this.collision(1, 0, this.activeTetromino)) {
-        this.unDraw();
         this.x++;
-        this.draw();
+        renderPlayfield();
     }
 };
 
 Piece.prototype.moveLeft = function() {
     if (!this.collision(-1, 0, this.activeTetromino)) {
-        this.unDraw();
         this.x--;
-        this.draw();
+        renderPlayfield();
     }
 };
 
@@ -140,23 +167,41 @@ Piece.prototype.rotate = function() {
     }
     
     if (!this.collision(kick, 0, nextPattern)) {
-        this.unDraw();
         this.x += kick;
         this.tetrominoN = (this.tetrominoN + 1) % this.tetromino.length;
         this.activeTetromino = this.tetromino[this.tetrominoN];
-        this.draw();
+        renderPlayfield();
     }
 };
 
 Piece.prototype.hardDrop = function() {
-    this.unDraw();
-    while (!this.collision(0, 1, this.activeTetromino)) {
-        this.y++;
-    }
-    this.draw();
+    this.y = this.getGhostY();
+    renderPlayfield();
     this.lock();
     if (gameOver) return;
     spawnNextPiece();
+};
+
+Piece.prototype.getGhostY = function() {
+    let ghostOffset = 0;
+    while (!this.collision(0, ghostOffset + 1, this.activeTetromino)) {
+        ghostOffset++;
+    }
+    return this.y + ghostOffset;
+};
+
+Piece.prototype.drawGhost = function() {
+    const ghostY = this.getGhostY();
+    if (ghostY === this.y) return;
+
+    const offsetY = ghostY - this.y;
+    for (let r = 0; r < this.activeTetromino.length; r++) {
+        for (let c = 0; c < this.activeTetromino.length; c++) {
+            if (this.activeTetromino[r][c]) {
+                drawGhostSquare(this.x + c, this.y + r + offsetY, this.color);
+            }
+        }
+    }
 };
 
 Piece.prototype.collision = function(x, y, piece) {
@@ -193,8 +238,9 @@ Piece.prototype.lock = function() {
     
     if (linesClearedThisTurn > 0) {
         updateScore(linesClearedThisTurn);
-        drawBoard();
     }
+
+    renderPlayfield();
 };
 
 // Game state
@@ -284,7 +330,7 @@ function randomPiece() {
 
 function spawnNextPiece() {
     currentPiece = nextPiece;
-    currentPiece.draw();
+    renderPlayfield();
     nextPiece = randomPiece();
     drawNextPiece();
 }
@@ -374,14 +420,11 @@ function restartGame() {
     
     // Reset pieces
     currentPiece = randomPiece();
-    currentPiece.draw();
     nextPiece = randomPiece();
     drawNextPiece();
     
     // Clear canvas and draw initial state
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawBoard();
-    currentPiece.draw();
+    renderPlayfield();
     
     // Restart loop
     dropStart = Date.now();
@@ -569,10 +612,9 @@ const PIECES = [
 
 // Start Game
 initBoard();
-drawBoard();
 currentPiece = randomPiece();
-currentPiece.draw();
 nextPiece = randomPiece();
 drawNextPiece();
 renderStats();
+renderPlayfield();
 animationId = requestAnimationFrame(drop);
