@@ -34,6 +34,23 @@ const SQ = 30; // Square size
 const VACANT = "transparent"; // Empty color
 const LINE_CLEAR_POINTS = [0, 10, 25, 40, 60];
 
+function hexToRgba(hex, alpha) {
+    const normalizedHex = hex.replace('#', '');
+    const safeHex = normalizedHex.length === 3
+        ? normalizedHex.split('').map(char => char + char).join('')
+        : normalizedHex;
+    const value = Number.parseInt(safeHex, 16);
+
+    if (Number.isNaN(value)) {
+        return `rgba(255, 255, 255, ${alpha})`;
+    }
+
+    const r = (value >> 16) & 255;
+    const g = (value >> 8) & 255;
+    const b = value & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function drawSquare(x, y, color, context = ctx) {
     if (color === VACANT) {
         context.clearRect(x * SQ, y * SQ, SQ, SQ);
@@ -70,6 +87,18 @@ function drawBoard() {
     }
 }
 
+function renderPlayfield() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBoard();
+
+    if (!currentPiece) {
+        return;
+    }
+
+    currentPiece.drawGhost();
+    currentPiece.draw();
+}
+
 // Piece constructor
 function Piece(tetromino, color) {
     this.tetromino = tetromino;
@@ -96,14 +125,31 @@ Piece.prototype.draw = function() {
 };
 
 Piece.prototype.unDraw = function() {
-    this.fill(VACANT);
+    renderPlayfield();
+};
+
+Piece.prototype.getGhostOffsetY = function() {
+    let offsetY = 0;
+
+    while (!this.collision(0, offsetY + 1, this.activeTetromino)) {
+        offsetY++;
+    }
+
+    return offsetY;
+};
+
+Piece.prototype.drawGhost = function() {
+    this.fill(hexToRgba(this.color, 0.25), ctx, 0, this.getGhostOffsetY());
+};
+
+Piece.prototype.unDrawGhost = function() {
+    renderPlayfield();
 };
 
 Piece.prototype.moveDown = function() {
     if (!this.collision(0, 1, this.activeTetromino)) {
-        this.unDraw();
         this.y++;
-        this.draw();
+        renderPlayfield();
     } else {
         this.lock();
         if (gameOver) return;
@@ -113,17 +159,15 @@ Piece.prototype.moveDown = function() {
 
 Piece.prototype.moveRight = function() {
     if (!this.collision(1, 0, this.activeTetromino)) {
-        this.unDraw();
         this.x++;
-        this.draw();
+        renderPlayfield();
     }
 };
 
 Piece.prototype.moveLeft = function() {
     if (!this.collision(-1, 0, this.activeTetromino)) {
-        this.unDraw();
         this.x--;
-        this.draw();
+        renderPlayfield();
     }
 };
 
@@ -140,20 +184,18 @@ Piece.prototype.rotate = function() {
     }
     
     if (!this.collision(kick, 0, nextPattern)) {
-        this.unDraw();
         this.x += kick;
         this.tetrominoN = (this.tetrominoN + 1) % this.tetromino.length;
         this.activeTetromino = this.tetromino[this.tetrominoN];
-        this.draw();
+        renderPlayfield();
     }
 };
 
 Piece.prototype.hardDrop = function() {
-    this.unDraw();
     while (!this.collision(0, 1, this.activeTetromino)) {
         this.y++;
     }
-    this.draw();
+    renderPlayfield();
     this.lock();
     if (gameOver) return;
     spawnNextPiece();
@@ -193,7 +235,6 @@ Piece.prototype.lock = function() {
     
     if (linesClearedThisTurn > 0) {
         updateScore(linesClearedThisTurn);
-        drawBoard();
     }
 };
 
@@ -284,7 +325,7 @@ function randomPiece() {
 
 function spawnNextPiece() {
     currentPiece = nextPiece;
-    currentPiece.draw();
+    renderPlayfield();
     nextPiece = randomPiece();
     drawNextPiece();
 }
@@ -374,14 +415,11 @@ function restartGame() {
     
     // Reset pieces
     currentPiece = randomPiece();
-    currentPiece.draw();
     nextPiece = randomPiece();
     drawNextPiece();
     
     // Clear canvas and draw initial state
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawBoard();
-    currentPiece.draw();
+    renderPlayfield();
     
     // Restart loop
     dropStart = Date.now();
@@ -569,10 +607,9 @@ const PIECES = [
 
 // Start Game
 initBoard();
-drawBoard();
 currentPiece = randomPiece();
-currentPiece.draw();
 nextPiece = randomPiece();
 drawNextPiece();
 renderStats();
+renderPlayfield();
 animationId = requestAnimationFrame(drop);

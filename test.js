@@ -85,6 +85,16 @@ MockPiece.prototype.collision = function(x, y, piece, board) {
     return false;
 };
 
+MockPiece.prototype.getGhostOffsetY = function(board) {
+    let offsetY = 0;
+
+    while (!this.collision(0, offsetY + 1, this.activeTetromino, board)) {
+        offsetY++;
+    }
+
+    return offsetY;
+};
+
 // Test Cases
 test("Board Initialization", () => {
     initBoard();
@@ -144,6 +154,19 @@ test("Line Clearing Logic Simulation - Double Line", () => {
 
     assert(linesCleared === 2, "Should have cleared two lines");
     assert(board[ROW - 1][2] === "red", "Block above double clear should fall to bottom");
+});
+
+test("Ghost Drop Position Stops Above Existing Stack", () => {
+    initBoard();
+    board[18][4] = "blue";
+    board[18][5] = "blue";
+
+    const O = [[[1, 1], [1, 1]]];
+    const piece = new MockPiece(O, 4, 0);
+    const ghostOffsetY = piece.getGhostOffsetY(board);
+
+    assert(ghostOffsetY === 16, "Ghost should stop with the piece directly above the stack");
+    assert(board[18][4] === "blue", "Ghost calculation must not mutate the board");
 });
 
 test("Scoring Rules", () => {
